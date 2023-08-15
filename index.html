@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1> Welcome </h1>
+    <form id="userform">
+        <input type="text" id="user" name="user">user
+        <input type="submit"> 
+    </form>        
+    <br>
+    <form id="form" >
+        <input type="text" name="name" id="name"> name
+        <input type="text" name="msg" id="msg"> msg
+        <input type="submit" id="submit">
+    </form>
+    <div id="msgs">
+
+    </div>
+    <script>
+        window.addEventListener('DOMContentLoaded',()=>{
+            let client;
+            const contacts = new Set
+            const user = document.forms[0];
+            user.addEventListener('submit',(event)=>{
+                event.preventDefault();
+                client = new WebSocket("ws://127.0.0.1:8000");
+                data = {
+                    "user": user.user.value
+                }
+                client.onopen = () => client.send(JSON.stringify(data));
+                client.onmessage = (e)=>{
+                    console.log(e.data);
+                    const data = e.data.toString;
+                    var dict = JSON.parse(e.data);
+                    recepient = dict["from"];
+                    console.log(recepient);
+
+                    // const x = document.createElement('p');
+                    // x.innerHTML = dict["data"] + " " +  dict["from"] ;
+                    // document.getElementById("msgs").appendChild(x);
+                    
+                    if(contacts.has(recepient)){
+                        const x = document.createElement('p');
+                        x.innerHTML = dict["data"];
+                        document.getElementById(recepient).appendChild(x);
+                    }
+                    else{
+                        const msgs = document.getElementById("msgs");
+                        const receiver = document.createElement('div');
+                        receiver.id = recepient;
+                        const rec = document.createElement('h3');
+                        rec.innerHTML = recepient;
+                        receiver.appendChild(rec);
+                        const x = document.createElement('p');
+                        x.innerHTML = dict["data"];
+                        receiver.appendChild(x);
+                        msgs.appendChild(receiver);
+                        contacts.add(recepient);
+                        console.log(dict["data"]);
+                        console.log("test");
+                    }
+                    
+                };
+            })
+            // const submit = document.getElementById("submit");
+            const form = document.forms[1];
+            
+            form.addEventListener('submit',(event)=>{
+                // console.log("submitted");
+                event.preventDefault();
+                const name = document.getElementById("name").value
+                console.log(form.name.value,form.msg.value);
+                const data = {
+                    "to" : form.name.value,
+                    "data" : form.msg.value
+                }   
+                client.send(JSON.stringify(data));
+                form.reset();
+            });
+            
+        })
+        
+    </script>
+</body>
+
+</html>
